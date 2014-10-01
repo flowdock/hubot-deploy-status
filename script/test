@@ -3,4 +3,4 @@
 export NODE_ENV=test
 export PATH="node_modules/.bin:$PATH"
 
-mocha --compilers coffee:coffee-script
+mocha --compilers coffee:coffee-script/register
