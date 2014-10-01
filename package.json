@@ -4,7 +4,7 @@
   "description": "Check deployment statuses from GitHub",
   "main": "index.coffee",
   "scripts": {
-    "test": "grunt test"
+    "test": "script/test"
   },
   "repository": {
     "type": "git",
@@ -26,5 +26,18 @@
   "bugs": {
     "url": "https://github.com/flowdock/hubot-deploy-status/issues"
   },
-  "homepage": "https://github.com/flowdock/hubot-deploy-status"
+  "homepage": "https://github.com/flowdock/hubot-deploy-status",
+  "dependencies": {
+    "coffee-script": "^1.8.0",
+    "octonode": "^0.6.7"
+  },
+  "devDependencies": {
+    "chai": "^1.9.2",
+    "mocha": "^1.21.4",
+    "sinon": "^1.10.3",
+    "sinon-chai": "^2.5.0"
+  },
+  "engines": {
+    "node": ">=0.8.0"
+  }
 }
