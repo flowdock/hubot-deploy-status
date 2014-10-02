@@ -39,7 +39,6 @@ class Application
         if !deployment?
           cb(null, res)
         else
-          deployment.sha = '0da0aa6e7917b53323346c37ed845756c26e6afd'
           client.get repoPath + "/compare/#{deployment.sha}...#{repository.default_branch}", {}, (err, status, compare) ->
             return cb(err) if err?
             res.compare = compare
