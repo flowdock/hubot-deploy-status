@@ -4,13 +4,28 @@
 # Commands:
 #   hubot deploy-status for <app> in <environment> - Check which ref of app has been deployed to env
 
-Path = require("path")
-patterns = require(Path.join(__dirname, "..", "patterns"))
+Path = require "path"
+patterns = require "../patterns"
+formatter = require "../formatter"
+Application = require '../application'
 
 module.exports = (robot) ->
 
   robot.respond patterns.deployStatus, (msg) ->
     [app, env] = msg.match[2...]
-    app ?= 'all applications'
     env ?= 'production'
-    msg.send "Checking for state of #{app} in #{env}"
+    robot.logger.debug "Checking deploy status of #{app} in #{env}"
+    user = robot.brain.userForId msg.envelope.user.id
+    token = user.githubDeployToken
+    application = Application.build(app, token)
+    if !application.isValid()
+      msg.send "I don't know about app #{app}"
+      return
+    if !application.hasEnvironment(env)
+      msg.send "App #{app} does not seem to be running in #{env}"
+      return
+    application.fetchStatus env, (err, res) ->
+      if err?
+        msg.send err.toString()
+      else
+        msg.send formatter.formatResponse(res)
