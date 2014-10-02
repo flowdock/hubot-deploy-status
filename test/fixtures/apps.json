@@ -1,0 +1,12 @@
+{
+  "project1": {
+    "provider": "bundler_capistrano",
+    "repository": "acme/project",
+    "environments": ["staging", "production"],
+    "required_contexts": ["default"]
+  },
+  "project2": {
+    "provider": "heroku",
+    "repository": "acme/other"
+  }
+}
