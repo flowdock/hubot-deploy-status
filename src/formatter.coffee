@@ -12,7 +12,7 @@ padTo = (string, length = 10) ->
     string + Array(length - string.length + 1).join(' ')
 
 commitLine = (commit) ->
-  "#{commit.sha.substr(0,7)} #{padTo(commit.committer.login, 10)} #{shortMessage(commit.commit.message)}"
+  "#{commit.sha.substr(0,7)} #{padTo(commit.author.login, 10)} #{shortMessage(commit.commit.message)}"
 
 commitList = (commits) ->
   ("    #{commitLine(commit)}" for commit in commits).join('\n')
@@ -25,19 +25,30 @@ module.exports =
       "App #{response.name} is up to date in #{response.environment}"
     else if response.isBehind()
       """
-      App #{response.name} is #{response.commitsBehind()} commits behind #{if response.commitsAhead() then "and #{response.commitsAhead()} ahead " else ''}#{response.head()} in #{response.environment}.
+      App #{response.name} is #{response.commitsBehind()} commits behind #{response.head()} in #{response.environment}.
       The deployed ref is #{response.deployedRef()} (#{response.deployedSha()}).
 
-      Pending commits:
-
-      """ + commitList(response.pendingCommits())
+      Commits that have not been deployed yet:
+      #{commitList(response.commits())}
+      """
     else if response.isAhead()
       """
       App #{response.name} is #{response.commitsAhead()} commits ahead #{response.head()} in #{response.environment}.
       The deployed ref is #{response.deployedRef()} (#{response.deployedSha()}).
 
       Commits deployed but not in #{response.head()}:
+      #{commitList(response.reverseCommits())}
+      """
+    else if response.isDiverged()
+      """
+      App #{response.name} is #{response.commitsAhead()} commits ahead and #{response.commitsBehind()} commits behind #{response.head()} in #{response.environment}.
+      The deployed ref is #{response.deployedRef()} (#{response.deployedSha()}).
 
-      """ + commitList(response.pendingCommits())
+      Commits that have not been deployed yet:
+      #{commitList(response.commits())}
+
+      Commits that have been deployed but are not in #{response.head()}:
+      #{commitList(response.reverseCommits())}
+      """
     else
       "Something strange is going on, the deployed version is not up to date, behind nor ahead #{response.head()}"

@@ -26,23 +26,30 @@ class Application
     repoPath = "/repos/#{@repository}"
     client = @api()
     res = new Response(@name, env, @data)
-    client.get repoPath, {}, (err, status, repository, headers) =>
+    client.get repoPath, {}, (err, status, repository) =>
       return cb(err) if err?
       res.repository = repository
       params =
         environment: env
         per_page: 1
         page: 1
-      client.get repoPath + "/deployments", params, (err, status, deployments, headers) ->
+      client.get repoPath + "/deployments", params, (err, status, deployments) ->
         return cb(err) if err?
         deployment = res.deployment = deployments[0]
         if !deployment?
           cb(null, res)
         else
-          client.get repoPath + "/compare/#{repository.default_branch}...#{deployment.sha}", {}, (err, status, compare, headers) ->
+          deployment.sha = '0da0aa6e7917b53323346c37ed845756c26e6afd'
+          client.get repoPath + "/compare/#{deployment.sha}...#{repository.default_branch}", {}, (err, status, compare) ->
             return cb(err) if err?
             res.compare = compare
-            cb(null, res)
+            if res.isAhead() || res.isDiverged()
+              # Compare api does not give commits that are ahead of compare, need to fetch the other way around
+              client.get repoPath + "/compare/#{repository.default_branch}...#{deployment.sha}", {}, (err, status, reverseCompare) ->
+                res.reverseCompare = reverseCompare
+                cb(null, res)
+            else
+              cb(null, res)
 
   api: ->
     api = Octonode.client(@token)
