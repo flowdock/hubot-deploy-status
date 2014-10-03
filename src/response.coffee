@@ -2,6 +2,7 @@ class Response
 
   constructor: (@name, @environment, @application) ->
     @compare = null
+    @reverseCompare = null
     @repository = null
     @deployment = null
 
@@ -40,5 +41,13 @@ class Response
 
   deployedSha: ->
     @deployment.sha.substr(0, 7)
+
+  compareUrl: ->
+    if @isBehind() || @isDiverged()
+      @compare.html_url
+    else if @isAhead()
+      @reverseCompare.html_url
+    else
+      @repository.html_url
 
 module.exports = Response
