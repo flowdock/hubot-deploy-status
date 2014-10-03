@@ -25,7 +25,7 @@ appLine = (name, app, appMaxLength) ->
     "%#{appMaxLength}s (%s) has environments [%s]",
     name,
     app.repository,
-    app.environments.join(", ")
+    (app.environments || ['production']).join(", ")
   )
 
 appList = (apps) ->
