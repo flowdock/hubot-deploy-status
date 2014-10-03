@@ -20,6 +20,18 @@ commitList = (commits) ->
   authorMaxLength = commits.reduce ((memo, commit) -> Math.max(memo, commit.author?.login.length || 'unknown'.length)), 0
   ("    #{commitLine(commit, authorMaxLength)}" for commit in commits).join('\n')
 
+appLine = (name, app, appMaxLength) ->
+  sprintf(
+    "%#{appMaxLength}s (%s) has environments [%s]",
+    name,
+    app.repository,
+    app.environments.join(", ")
+  )
+
+appList = (apps) ->
+  appMaxLength = Object.keys(apps).reduce ((memo, name) -> Math.max(memo, name.length)), 0
+  ("    #{appLine(name, app, appMaxLength)}" for name, app of apps).join('\n')
+
 module.exports =
   formatResponse: (response) ->
     if response.noDeployments()
@@ -67,3 +79,13 @@ module.exports =
       """
     else
       "Something strange is going on, the deployed version is not up to date, behind nor ahead #{response.head()}"
+
+  formatApps: (apps) ->
+    console.log apps
+    if apps.length == 0
+      "I don't know about any apps that can be deployed. Make sure you've configured apps.json."
+    else
+      """
+      Here are the apps I know about:
+      #{appList(apps)}
+      """
