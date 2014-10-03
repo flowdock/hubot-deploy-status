@@ -30,7 +30,9 @@ appLine = (name, app, appMaxLength) ->
 
 appList = (apps) ->
   appMaxLength = Object.keys(apps).reduce ((memo, name) -> Math.max(memo, name.length)), 0
-  ("    #{appLine(name, app, appMaxLength)}" for name, app of apps).join('\n')
+  res = []
+  res.push("    #{appLine(name, app, appMaxLength)}") for name, app of apps
+  res.join('\n')
 
 module.exports =
   formatResponse: (response) ->
