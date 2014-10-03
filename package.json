@@ -29,7 +29,11 @@
   "homepage": "https://github.com/flowdock/hubot-deploy-status",
   "dependencies": {
     "coffee-script": "^1.8.0",
-    "octonode": "^0.6.7"
+    "cron": "^1.0.5",
+    "octonode": "^0.6.7",
+    "sprintf": "^0.1.4",
+    "time": "^0.11.0",
+    "timeago": "^0.2.0"
   },
   "devDependencies": {
     "chai": "^1.9.2",
