@@ -25,7 +25,14 @@ runNagger = (robot, room, name, env) ->
         robot.logger.info "App #{name} in #{env} is up to date with #{res.head()}."
         return
       else
-        robot.messageRoom room, "Automatic status check:\n\n" + formatter.formatResponse(res)
+        robot.messageRoom room,
+          """
+          Automatic status check:
+
+          #{formatter.formatResponse(res)}
+
+          cc: #{formatter.mentionCommitters(robot, res)}
+          """
 
 parseConfig = (config) ->
   config: config.environments

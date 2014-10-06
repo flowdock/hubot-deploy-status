@@ -106,3 +106,20 @@ module.exports =
       Deployment status auto checks:
       #{deploymentStatuList(activeJobs, apps)}
       """
+
+  mentionCommitters: (robot, response) ->
+    committers = {}
+    committers[commit.author.login] = true for commit in response.commits() when commit.author?.login
+    committers[commit.author.login] = true for commit in response.reverseCommits() when commit.author?.login if response.reverseCompare?
+    githubUsers = Object.keys(committers)
+    users = robot.brain.users()
+    githubUsers.map((nick) ->
+      byGithubLogin = null
+      for k of users
+        byGithubLogin = users[k] if users[k].githubLogin?.toLowerCase() == nick.toLowerCase()
+      byGithubLogin || robot.brain.userForName(nick)
+    ).filter((u) ->
+      u?
+    ).map((u) ->
+      "@#{u.name}"
+    ).join(", ")
