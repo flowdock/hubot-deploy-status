@@ -5,6 +5,8 @@ Check deployment statuses from GitHub. Tries to use same data and configs that's
 
 The script will fetch the latest deployment for an app (in specified environment) and display its status compared to the master (repo default) branch.
 
+The script will also allow automatic cron-like deployment status checks, so your hubot can be configured to notify you if some environment for an app is not up to date (for example one component hasn't been deployed to production).
+
 Tokens
 ------
 
@@ -13,10 +15,10 @@ Please not that to work, the GitHub tokens used must have `user,repo` oauth scop
 Usage
 -----
 
-For app that's configured with name `example` and has environments `staging` and `production`, you can say
+For app that's configured with name `example-app` and has environments `staging` and `production`, you can say
 
 ```
-hubot deploy-status for example in staging
+hubot deploy-status for example-app in staging
 ```
 
 and the response will be something like
@@ -34,3 +36,46 @@ e88769b Mumakil  Bump version
 e429769 Mumakil  Use double quotes in gemfile
 
 ```
+
+Configuration
+-------------
+
+In general, the script will need `HUBOT_GITHUB_TOKEN`, which you will probably already have if your hubot interacts with github. If you want to have full functionality, the token must have `user,repo` oauth scopes.
+
+In `apps.json`, you can configure the automatic status using cron-like syntax:
+```javascript
+{
+    # A simple case with just production environment.
+    # Check the status once every work day at 8am and post
+    # results to a chat room.
+    "example1": {
+        "provider": "heroku",
+        "repository": "acme/example1",
+        "check_deploy_status": {
+            "environments": {
+                "production": "0 0 8 * * 1-5"
+            },
+            "room": "14dc03c3-8c97-45a5-8432-59df312e7c1b"
+        }
+    },
+    # A little more complex example with multiple environments
+    # and timezone support. Checks production every workday at
+    # 8am EET and staging environment every two hours.
+    "example2": {
+        "provider": "bundler_capistrano",
+        "repository": "acme/example2",
+        "environments": ["staging", "production"],
+        "check_deploy_status": {
+            "environments": {
+                "production": "0 0 8 * * 1-5",
+                "staging": "0 0 8-18/2 * * 1-5"
+            },
+            "room": "14dc03c3-8c97-45a5-8432-59df312e7c1b",
+            "timezone": "Europe/Helsinki"
+        }
+    }
+}
+
+```
+
+The script uses [cron package](https://www.npmjs.org/package/cron), so the cron pattern can be anything that package understands. Timezones are from [time package](https://www.npmjs.org/package/time).
