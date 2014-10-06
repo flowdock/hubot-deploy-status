@@ -80,6 +80,13 @@ describe 'patterns', ->
       expect(matches[3], "wrong app").to.equal "app"
       expect(matches[4], "wrong environment").to.be.undefined
 
+    it 'matches "deploy-status:auto toggle app in env', ->
+      matches = "deploy-status:auto toggle app in env".match(@pattern)
+      expect(matches[1], "wrong command").to.equal "deploy-status:auto"
+      expect(matches[2], "wrong action").to.equal "toggle"
+      expect(matches[3], "wrong app").to.equal "app"
+      expect(matches[4], "wrong environment").to.equal 'env'
+
     it 'matches "deploy-status:auto on for app', ->
       matches = "deploy-status:auto on for app".match(@pattern)
       expect(matches[1], "wrong command").to.equal "deploy-status:auto"

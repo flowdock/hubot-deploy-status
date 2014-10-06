@@ -34,6 +34,13 @@ appList = (apps) ->
   res.push("    #{appLine(name, app, appMaxLength)}") for name, app of apps
   res.join('\n')
 
+
+deployStatusForApp = (name, config, activeEnvs = {}) ->
+  (["#{env}:"].concat(if activeEnvs[env] then ['enabled', "(#{cron})"] else ['disabled']).join(' ') for env, cron of config.environments)
+
+deploymentStatuList = (activeJobs, apps) ->
+  (["    #{name}:"].concat(deployStatusForApp(name, apps[name].check_deploy_status, jobs)).join('\n      ') for name, jobs of activeJobs).join('\n')
+
 module.exports =
   formatResponse: (response) ->
     if response.noDeployments()
@@ -83,11 +90,19 @@ module.exports =
       "Something strange is going on, the deployed version is not up to date, behind nor ahead #{response.head()}"
 
   formatApps: (apps) ->
-    console.log apps
-    if apps.length == 0
+    if Object.keys(apps).length == 0
       "I don't know about any apps that can be deployed. Make sure you've configured apps.json."
     else
       """
       Here are the apps I know about:
       #{appList(apps)}
+      """
+
+  formatAutoCheckStatus: (activeJobs, apps) ->
+    if Object.keys(activeJobs).length == 0
+      "I don't know about any apps that have automatic checks set up. Configure them in apps.json."
+    else
+      """
+      Deployment status auto checks:
+      #{deploymentStatuList(activeJobs, apps)}
       """
