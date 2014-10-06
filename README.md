@@ -68,9 +68,9 @@ In general, the script will need `HUBOT_GITHUB_TOKEN`, which you will probably a
 In `apps.json`, you can configure the automatic status using cron-like syntax:
 ```javascript
 {
-    # A simple case with just production environment.
-    # Check the status once every work day at 8am and post
-    # results to a chat room.
+    // A simple case with just production environment.
+    // Check the status once every work day at 8am and post
+    // results to a chat room.
     "example1": {
         "provider": "heroku",
         "repository": "acme/example1",
@@ -81,9 +81,9 @@ In `apps.json`, you can configure the automatic status using cron-like syntax:
             "room": "14dc03c3-8c97-45a5-8432-59df312e7c1b"
         }
     },
-    # A little more complex example with multiple environments
-    # and timezone support. Checks production every workday at
-    # 8am EET and staging environment every two hours.
+    // A little more complex example with multiple environments
+    // and timezone support. Checks production every workday at
+    // 8am EET and staging environment every two hours.
     "example2": {
         "provider": "bundler_capistrano",
         "repository": "acme/example2",
