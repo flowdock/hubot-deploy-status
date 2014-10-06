@@ -26,7 +26,7 @@ class Application
     repoPath = "/repos/#{@repository}"
     client = @api()
     res = new Response(@name, env, @data)
-    client.get repoPath, {}, (err, status, repository) =>
+    client.get repoPath, {}, (err, status, repository) ->
       return cb(err) if err?
       res.repository = repository
       params =
