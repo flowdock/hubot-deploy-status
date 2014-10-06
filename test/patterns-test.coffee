@@ -50,33 +50,46 @@ describe 'patterns', ->
       expect(matches[1], "wrong command").to.equal "deploy-status:auto"
       expect(matches[2], "wrong action").to.be.undefined
       expect(matches[3], "wrong app").to.be.undefined
+      expect(matches[4], "wrong environment").to.be.undefined
 
     it 'matches "deploy-status:auto toggle', ->
       matches = "deploy-status:auto toggle".match(@pattern)
       expect(matches[1], "wrong command").to.equal "deploy-status:auto"
       expect(matches[2], "wrong action").to.equal "toggle"
       expect(matches[3], "wrong app").to.be.undefined
+      expect(matches[4], "wrong environment").to.be.undefined
 
     it 'matches "deploy-status:auto on', ->
       matches = "deploy-status:auto on".match(@pattern)
       expect(matches[1], "wrong command").to.equal "deploy-status:auto"
       expect(matches[2], "wrong action").to.be.equal "on"
       expect(matches[3], "wrong app").to.be.undefined
+      expect(matches[4], "wrong environment").to.be.undefined
 
     it 'matches "deploy-status:auto off', ->
       matches = "deploy-status:auto off".match(@pattern)
       expect(matches[1], "wrong command").to.equal "deploy-status:auto"
       expect(matches[2], "wrong action").to.equal "off"
       expect(matches[3], "wrong app").to.be.undefined
+      expect(matches[4], "wrong environment").to.be.undefined
 
     it 'matches "deploy-status:auto toggle app', ->
       matches = "deploy-status:auto toggle app".match(@pattern)
       expect(matches[1], "wrong command").to.equal "deploy-status:auto"
       expect(matches[2], "wrong action").to.equal "toggle"
       expect(matches[3], "wrong app").to.equal "app"
+      expect(matches[4], "wrong environment").to.be.undefined
 
     it 'matches "deploy-status:auto on for app', ->
       matches = "deploy-status:auto on for app".match(@pattern)
       expect(matches[1], "wrong command").to.equal "deploy-status:auto"
       expect(matches[2], "wrong action").to.equal "on"
       expect(matches[3], "wrong app").to.equal "app"
+      expect(matches[4], "wrong environment").to.be.undefined
+
+    it 'matches "deploy-status:auto on for app in env', ->
+      matches = "deploy-status:auto on for app in env".match(@pattern)
+      expect(matches[1], "wrong command").to.equal "deploy-status:auto"
+      expect(matches[2], "wrong action").to.equal "on"
+      expect(matches[3], "wrong app").to.equal "app"
+      expect(matches[4], "wrong environment").to.equal "env"

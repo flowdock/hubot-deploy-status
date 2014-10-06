@@ -7,7 +7,8 @@ module.exports =
     (?:\s+in\s+#{repository})?   # possible env
   ///i
   autoDeployStatus: ///
-    (deploy-status:auto)        # Command prefix
-    (?:\s+(toggle|on|off))?         # subcommand
+    (deploy-status:auto)             # Command prefix
+    (?:\s+(toggle|on|off))?          # subcommand
     (?:(?:\s+for)?\s+#{repository})? # app name
+    (?:(?:\s+in)\s+#{repository})?   # in environment
   ///i
