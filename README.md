@@ -37,6 +37,29 @@ e429769 Mumakil  Use double quotes in gemfile
 
 ```
 
+To check which apps and envs can be queried:
+
+```
+hubot deploy-status
+```
+
+To toggle / turn on / turn on / check status of configured automatic checks
+
+```
+# what apps and envs are automatically checked
+hubot deploy-status:auto
+
+# Turn all checks off
+hubot deploy-status:auto off
+
+# Toggle specific environment
+hubot deploy-status:auto toggle app1 in production
+
+# Turn on all environments for an app
+hubot deploy-status:auto on for app1
+```
+
+
 Configuration
 -------------
 
