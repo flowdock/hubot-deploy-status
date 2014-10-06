@@ -41,14 +41,16 @@ scheduleEnv = (robot, name, app, env) ->
   {config, room, timezone} = parseConfig(app.check_deploy_status)
   activeJobs[name] ?= {}
   if !config[env]
-    throw new Error('No configuration for that environment')
+    throw new Error("No configuration for app #{name} in #{env} environment")
+  if !room
+    throw new Error("No room specified in configuration for app #{name}")
   robot.logger.info "Scheduling deploy nagger for #{name} in #{env} (#{config[env]})"
   try
     runner = ->
       runNagger(robot, room, name, env)
     activeJobs[name][env] = new CronJob(config[env], runner, undefined, true, timezone)
   catch e
-    throw new Error('Invalid cron pattern in configuration: ' + config[env])
+    throw new Error("Invalid cron pattern in configuration for #{name} in #{env}: #{config[env]}")
 
 unschedule = (name, app) ->
   {environments} = parseConfig(app.check_deploy_status)
