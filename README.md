@@ -1,7 +1,7 @@
 hubot-deploy-status
 ===================
 
-Check deployment statuses from GitHub. Tries to use same data and configs that's available for [hubot-deploy](https://github.com/hubot-deploy). Reads app config from `apps.json` and uses `HUBOT_GITHUB_TOKEN` or a user's personal deploy token (see `hubot-deploy`) if that's available to make api requests.
+Check deployment statuses from GitHub. Tries to use same data and configs that's available for [hubot-deploy](https://github.com/atmos/hubot-deploy). Reads app config from `apps.json` and uses `HUBOT_GITHUB_TOKEN` or a user's personal deploy token (see `hubot-deploy`) if that's available to make api requests.
 
 The script will fetch the latest deployment for an app (in specified environment) and display its status compared to the master (repo default) branch.
 
