@@ -23,36 +23,59 @@ class Application
     env in @environments
 
   fetchStatus: (env, cb) ->
-    repoPath = "/repos/#{@repository}"
     client = @api()
     res = new Response(@name, env, @data)
-    client.get repoPath, {}, (err, status, repository) ->
+    client.get "/repos/#{@repository}", {}, (err, status, repository) =>
       return cb(err) if err?
       res.repository = repository
-      params =
-        environment: env
-        per_page: 1
-        page: 1
-      client.get repoPath + "/deployments", params, (err, status, deployments) ->
+      @lastSuccessfullDeployment env, (err, deployment) =>
         return cb(err) if err?
-        deployment = res.deployment = deployments[0]
-        if !deployment?
-          cb(null, res)
-        else
-          client.get repoPath + "/compare/#{deployment.sha}...#{repository.default_branch}", {}, (err, status, compare) ->
-            return cb(err) if err?
-            res.compare = compare
-            if res.isAhead() || res.isDiverged()
-              # Compare api does not give commits that are ahead of compare, need to fetch the other way around
-              client.get repoPath + "/compare/#{repository.default_branch}...#{deployment.sha}", {}, (err, status, reverseCompare) ->
-                res.reverseCompare = reverseCompare
-                cb(null, res)
-            else
+        return cb(null, res) unless deployment?
+        res.deployment = deployment
+        client.get "/repos/#{@repository}/compare/#{deployment.sha}...#{repository.default_branch}", {}, (err, statusCode, compare) =>
+          return cb(err) if err?
+          res.compare = compare
+          if res.isAhead() || res.isDiverged()
+            # Compare api does not give commits that are ahead of compare, need to fetch the other way around
+            client.get "/repos/#{@repository}/compare/#{repository.default_branch}...#{deployment.sha}", {}, (err, statusCode, reverseCompare) ->
+              return cb(err) if err?
+              res.reverseCompare = reverseCompare
               cb(null, res)
+          else
+            cb(null, res)
 
   api: ->
     api = Octonode.client(@token)
     api.requestDefaults.headers['Accept'] = 'application/vnd.github.cannonball-preview+json'
     api
+
+  # private
+  lastSuccessfullDeployment: (env, cb, page = 1) ->
+    client = @api()
+    params =
+      environment: env
+      per_page: 10
+      page: page
+    client.get "/repos/#{@repository}/deployments", params, (err, statusCode, deployments) =>
+      return cb(err) if err?
+      return cb(null, null) if deployments.length == 0
+      @fetchDeploymentStatuses deployments, (err, deployment) ->
+        return cb(err) if err?
+        return cb(null, deployment) if deployment?
+        @lastSuccessfullDeployment(env, cb, page + 1)
+
+  fetchDeploymentStatuses: (deployments, cb) ->
+    deployment = deployments.shift()
+    return cb(null, null) unless deployment?
+    client = @api()
+    client.get "/repos/#{@repository}/deployments/#{deployment.id}/statuses", {}, (err, statusCode, statuses) =>
+      return cb(err) if err?
+      success = false
+      for status in statuses
+        success = true if status.state == 'success'
+      if success
+        cb(null, deployment)
+      else
+        @fetchDeploymentStatuses(deployments, cb)
 
 module.exports = Application
