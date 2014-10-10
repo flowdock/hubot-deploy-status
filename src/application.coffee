@@ -59,7 +59,7 @@ class Application
     client.get "/repos/#{@repository}/deployments", params, (err, statusCode, deployments) =>
       return cb(err) if err?
       return cb(null, null) if deployments.length == 0
-      @fetchDeploymentStatuses deployments, (err, deployment) ->
+      @fetchDeploymentStatuses deployments, (err, deployment) =>
         return cb(err) if err?
         return cb(null, deployment) if deployment?
         @lastSuccessfullDeployment(env, cb, page + 1)
