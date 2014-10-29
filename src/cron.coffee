@@ -1,6 +1,9 @@
 {CronJob} = require 'cron'
 Application = require './application'
-formatter = require './formatter'
+
+adapters = {}
+availableAdapters = ['default', 'flowdock']
+adapters[name] = require("./adapters/#{name}") for name in availableAdapters
 
 activeJobs = {}
 
@@ -25,14 +28,8 @@ runNagger = (robot, room, name, env) ->
         robot.logger.info "App #{name} in #{env} is up to date with #{res.head()}."
         return
       else
-        robot.messageRoom room,
-          """
-          Automatic status check:
-
-          #{formatter.formatResponse(res)}
-
-          cc: #{formatter.mentionCommitters(robot, res)}
-          """
+        adapter = application.data.check_deploy_status?.adapter || 'default'
+        adapters[adapter](res, robot, application, room, env)
 
 parseConfig = (config) ->
   config: config.environments
