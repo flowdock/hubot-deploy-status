@@ -7,7 +7,7 @@ adapters[name] = require("./adapters/#{name}") for name in availableAdapters
 
 activeJobs = {}
 
-runNagger = (robot, room, name, env) ->
+runNagger = (robot, room, name, env, adapter) ->
   application = Application.build(name)
   robot.logger.info "Fetching automatic deployment info #{name} in #{env}"
   application.fetchStatus env, (err, res) ->
@@ -28,21 +28,21 @@ runNagger = (robot, room, name, env) ->
         robot.logger.info "App #{name} in #{env} is up to date with #{res.head()}."
         return
       else
-        adapter = application.data.check_deploy_status?.adapter || 'default'
         adapters[adapter](res, robot, application, room)
 
 parseConfig = (config) ->
   config: config.environments
   environments: Object.keys(config.environments)
-  room: config.room
+  room: config.room || process.env.DEPLOY_STATUS_ROOM
   timezone: config.timezone || process.env.DEPLOY_STATUS_TIMEZONE
+  adapter: config.adapter || process.env.DEPLOY_STATUS_ADAPTER || 'default'
 
 unscheduleEnv = (name, env) ->
   activeJobs[name]?[env]?.stop()
   activeJobs[name]?[env] = undefined
 
 scheduleEnv = (robot, name, app, env) ->
-  {config, room, timezone} = parseConfig(app.check_deploy_status)
+  {config, room, timezone, adapter} = parseConfig(app.check_deploy_status)
   activeJobs[name] ?= {}
   if !config[env]
     throw new Error("No configuration for app #{name} in #{env} environment")
@@ -51,7 +51,7 @@ scheduleEnv = (robot, name, app, env) ->
   robot.logger.info "Scheduling deploy nagger for #{name} in #{env} (#{config[env]})"
   try
     runner = ->
-      runNagger(robot, room, name, env)
+      runNagger(robot, room, name, env, adapter)
     activeJobs[name][env] = new CronJob(config[env], runner, undefined, true, timezone)
   catch e
     throw new Error("Invalid cron pattern in configuration for #{name} in #{env}: #{config[env]}")

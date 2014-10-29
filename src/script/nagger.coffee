@@ -3,6 +3,9 @@
 #
 # Configuration
 #   DEPLOY_STATUS_TIMEZONE a blobal setting for cron timezone. See https://www.npmjs.org/package/time for valid values.
+#   DEPLOY_STATUS_ADAPTER which adapter to use for automatic naggings
+#   DEPLOY_STATUS_ROOM (Default adapter) which room to post to
+#   DEPLOY_STATUS_SOURCE_TOKEN (Flowdock adapter) the source token to use for posting to Flowdock
 #
 # Commands
 #   hubot deploy-status:auto toggle|on|off for <app> in <env> - Check status of or toggle automatic nagging if deployments lag behind default_branch. All parameters are optional.
