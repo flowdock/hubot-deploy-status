@@ -1,6 +1,9 @@
 # Description
 #   Check deployment statuses of repos and compare to master / other branches - https://github.com/flowdock/hubot-deploy-status
 #
+# Configuration
+#   DEPLOY_STATUS_TIMEZONE a blobal setting for cron timezone. See https://www.npmjs.org/package/time for valid values.
+#
 # Commands
 #   hubot deploy-status:auto toggle|on|off for <app> in <env> - Check status of or toggle automatic nagging if deployments lag behind default_branch. All parameters are optional.
 

@@ -38,7 +38,7 @@ parseConfig = (config) ->
   config: config.environments
   environments: Object.keys(config.environments)
   room: config.room
-  timezone: config.timezone
+  timezone: config.timezone || process.env.DEPLOY_STATUS_TIMEZONE
 
 unscheduleEnv = (name, env) ->
   activeJobs[name]?[env]?.stop()
