@@ -29,7 +29,7 @@ runNagger = (robot, room, name, env) ->
         return
       else
         adapter = application.data.check_deploy_status?.adapter || 'default'
-        adapters[adapter](res, robot, application, room, env)
+        adapters[adapter](res, robot, application, room)
 
 parseConfig = (config) ->
   config: config.environments

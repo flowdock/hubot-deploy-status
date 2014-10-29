@@ -3,12 +3,12 @@
 #
 formatter = require '../formatter'
 
-module.exports = (response, robot, application, room, env) ->
+module.exports = (response, robot, application, room) ->
   robot.messageRoom room,
     """
     Automatic status check:
 
-    #{formatter.formatResponse(res)}
+    #{formatter.formatResponse(response)}
 
-    cc: #{formatter.mentionCommitters(robot, res)}
+    cc: #{formatter.mentionCommitters(robot, response)}
     """
