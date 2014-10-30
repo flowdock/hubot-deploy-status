@@ -59,31 +59,52 @@ hubot deploy-status:auto toggle app1 in production
 hubot deploy-status:auto on for app1
 ```
 
+Automatic checks and adapters
+-----------------------------
+
+It's possible to use a different adapters to handle the automatic status check posting. Currently by default the script will post fairly simple messages to chat. Another option if you're a Flowdock user is to use Flowdock adapter.
+
+TL;DR Supported adapters at the moment are `default` and `flowdock`.
+
 
 Configuration
 -------------
 
 In general, the script will need `HUBOT_GITHUB_TOKEN`, which you will probably already have if your hubot interacts with github. If you want to have full functionality, the token must have `user,repo` oauth scopes.
 
-In `apps.json`, you can configure the automatic status using cron-like syntax:
+The following environment variables can be set and will be used as defaults, but individual apps can override the settings. Examples included:
+
+```
+DEPLOY_STATUS_TIMEZONE=Europe/Helsinki
+DEPLOY_STATUS_ROOM=acdcabbacd0123456789
+DEPLOY_STATUS_ADAPTER=flowdock
+```
+Flowdock adapter supports additional:
+```
+DEPLOY_STATUS_SOURCE_TOKEN=9559e07bea935d55657bfdcb8d2b9c2c
+DEPLOY_STATUS_AUTHOR_NAME=Hubot
+DEPLOY_STATUS_AUTHOR_AVATAR=http://www.example.com/avatar.jpg
+```
+
+Then, in `apps.json`, you can configure the automatic status using cron-like syntax:
 ```javascript
 {
     // A simple case with just production environment.
     // Check the status once every work day at 8am and post
-    // results to a chat room.
+    // results to the default chat room in env DEPLOY_STATUS_ROOM.
     "example1": {
         "provider": "heroku",
         "repository": "acme/example1",
         "check_deploy_status": {
             "environments": {
                 "production": "0 0 8 * * 1-5"
-            },
-            "room": "14dc03c3-8c97-45a5-8432-59df312e7c1b"
+            }
         }
     },
     // A little more complex example with multiple environments
     // and timezone support. Checks production every workday at
-    // 8am EET and staging environment every two hours.
+    // 8am EET and staging environment every two hours overriding adapter,
+    // and room.
     "example2": {
         "provider": "bundler_capistrano",
         "repository": "acme/example2",
@@ -93,6 +114,7 @@ In `apps.json`, you can configure the automatic status using cron-like syntax:
                 "production": "0 0 8 * * 1-5",
                 "staging": "0 0 8-18/2 * * 1-5"
             },
+            "adapter": "default",
             "room": "14dc03c3-8c97-45a5-8432-59df312e7c1b",
             "timezone": "Europe/Helsinki"
         }
