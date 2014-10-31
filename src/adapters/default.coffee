@@ -3,12 +3,16 @@
 #
 formatter = require '../formatter'
 
-module.exports = (response, robot, application, room) ->
-  robot.messageRoom room,
-    """
-    Automatic status check:
+module.exports =
+  message: (response, robot, application, room, done = ->) ->
+    message = """
+      Automatic status check:
 
-    #{formatter.formatResponse(response)}
+      #{formatter.formatResponse(response)}
 
-    cc: #{formatter.mentionCommitters(robot, response)}
-    """
+      cc: #{formatter.mentionCommitters(robot, response)}
+      """
+    robot.messageRoom room, message
+    done()
+  collectResults: ->
+    # noop

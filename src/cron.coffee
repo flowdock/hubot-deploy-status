@@ -6,81 +6,100 @@ availableAdapters = ['default', 'flowdock']
 adapters[name] = require("./adapters/#{name}") for name in availableAdapters
 
 activeJobs = {}
+disabledJobs = {}
 
-runNagger = (robot, room, name, env, adapter) ->
+runNagger = (robot, room, name, env, adapter, done = ->) ->
+  return done() if disabledJobs[name]?[env]
   application = Application.build(name)
   robot.logger.info "Fetching automatic deployment info #{name} in #{env}"
   application.fetchStatus env, (err, res) ->
-    if err?
-      robot.messageRoom room,
-        """
-        Tried to fetch deploy status for app #{name} in #{env} but ran into error:
-        #{err.toString()}
+    try
+      if err?
+        robot.messageRoom room,
+          """
+          Tried to fetch deploy status for app #{name} in #{env} but ran into error:
+          #{err.toString()}
 
-        This job has been disabled, you need to restart #{robot.name} or enable the job by telling me "deploy-status:auto on for #{name} in #{env}"
-        """
-      robot.logger.info "Unscheduling deploy check for app #{name} in #{env} after an error"
-      unscheduleEnv(name, env)
-    else
-      if res.noDeployments()
-        robot.logger.info "App #{name} does not have deployments in #{env}."
-      else if res.isUpToDate()
-        robot.logger.info "App #{name} in #{env} is up to date with #{res.head()}."
-        return
+          This job has been disabled, you need to restart #{robot.name} or enable the job by telling me "deploy-status:auto on for #{name} in #{env}"
+          """
+        robot.logger.info "Unscheduling deploy check for app #{name} in #{env} after an error"
+        disable(name, env)
+        done()
       else
-        adapters[adapter](res, robot, application, room)
+        if res.noDeployments()
+          robot.logger.info "App #{name} does not have deployments in #{env}."
+          done()
+        else if res.isUpToDate()
+          robot.logger.info "App #{name} in #{env} is up to date with #{res.head()}."
+          done()
+        else
+          adapters[adapter].message(res, robot, application, room, done)
+    catch e
+      robot.logger.error "Error while checking deploy status: #{e.toString()}"
+      done()
 
 parseConfig = (config) ->
   config: config.environments
   environments: Object.keys(config.environments)
   room: config.room || process.env.DEPLOY_STATUS_ROOM
-  timezone: config.timezone || process.env.DEPLOY_STATUS_TIMEZONE
   adapter: config.adapter || process.env.DEPLOY_STATUS_ADAPTER || 'default'
 
-unscheduleEnv = (name, env) ->
-  activeJobs[name]?[env]?.stop()
-  activeJobs[name]?[env] = undefined
+disable = (name, env) ->
+  disabledJobs[name] ?= {}
+  disabledJobs[name][env] = true
 
-scheduleEnv = (robot, name, app, env) ->
-  {config, room, timezone, adapter} = parseConfig(app.check_deploy_status)
-  activeJobs[name] ?= {}
-  if !config[env]
-    throw new Error("No configuration for app #{name} in #{env} environment")
-  if !room
-    throw new Error("No room specified in configuration for app #{name}")
-  robot.logger.info "Scheduling deploy nagger for #{name} in #{env} (#{config[env]})"
-  try
-    runner = ->
-      runNagger(robot, room, name, env, adapter)
-    activeJobs[name][env] = new CronJob(config[env], runner, undefined, true, timezone)
-  catch e
-    throw new Error("Invalid cron pattern in configuration for #{name} in #{env}: #{config[env]}")
-
-unschedule = (name, app) ->
-  {environments} = parseConfig(app.check_deploy_status)
-  for env in environments
-    unscheduleEnv(name, env)
-
-schedule = (robot, name, app) ->
-  {environments} = parseConfig(app.check_deploy_status)
-  for env in environments
-    unscheduleEnv(name, env)
-    scheduleEnv(robot, name, app, env)
+enable = (name, env) ->
+  disabledJobs[name]?[env] = false
 
 status = (name, app) ->
   {environments} = parseConfig(app.check_deploy_status)
-  if !activeJobs[name]
-    return {}
-  else
-    ret = {}
-    for env in environments
-      ret[env] = activeJobs[name][env]?
-    ret
+  ret = {}
+  for env in environments
+    ret[env] = !disabledJobs[name]?[env]
+  ret
+
+runJobsAt = (robot, cronSpec, apps) ->
+  queue = []
+  results = []
+  adapter = null
+  room = null
+  for name, app of apps when app.check_deploy_status?
+    config = app.check_deploy_status
+    {room, adapter} = parseConfig(config)
+    for env, envCronSpec of config.environments when envCronSpec == cronSpec
+      queue.push [robot, room, name, env, adapter]
+  runNext = (tail) ->
+    if tail.length == 0
+      adapters[adapter].collectResults(results, robot, room, apps)
+      return
+    job = tail.shift()
+    runNagger(job..., (args...) ->
+      results.push args
+      runNext(tail)
+    )
+  runNext(queue)
+
+schedule = (robot, cronSpec, apps) ->
+  timezone = process.env.DEPLOY_STATUS_TIMEZONE
+  runner = ->
+    runJobsAt(robot, cronSpec, apps)
+  activeJobs[cronSpec] = new CronJob(cronSpec, runner, undefined, true, timezone)
+
+setup = (apps, robot) ->
+  cronSpecifications = {}
+  for name, app of apps when app.check_deploy_status?
+    for env, cronSpec of app.check_deploy_status.environments
+      cronSpecifications[cronSpec] = true
+  cronSpecs = Object.keys(cronSpecifications)
+  for cronSpec in cronSpecs
+    try
+      robot.logger.info "Adding deployment nagger watch #{cronSpec}"
+      schedule(robot, cronSpec, apps)
+    catch e
+      robot.logger.error "ERROR SCHEDULING DEPLOY-STATUS NAGGER: #{e.toString()}"
 
 module.exports =
-  schedule: schedule
-  unschedule: unschedule
-  scheduleEnv: scheduleEnv
-  unscheduleEnv: unscheduleEnv
+  enable: enable
+  disable: disable
   status: status
-
+  setup: setup

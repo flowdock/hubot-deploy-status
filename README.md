@@ -101,10 +101,9 @@ Then, in `apps.json`, you can configure the automatic status using cron-like syn
             }
         }
     },
-    // A little more complex example with multiple environments
-    // and timezone support. Checks production every workday at
-    // 8am EET and staging environment every two hours overriding adapter,
-    // and room.
+    // A little more complex example with multiple environments.
+    // Checks production every workday at 8am and staging environment every
+    // two hours overriding adapter and room.
     "example2": {
         "provider": "bundler_capistrano",
         "repository": "acme/example2",
@@ -115,8 +114,7 @@ Then, in `apps.json`, you can configure the automatic status using cron-like syn
                 "staging": "0 0 8-18/2 * * 1-5"
             },
             "adapter": "default",
-            "room": "14dc03c3-8c97-45a5-8432-59df312e7c1b",
-            "timezone": "Europe/Helsinki"
+            "room": "14dc03c3-8c97-45a5-8432-59df312e7c1b"
         }
     }
 }
