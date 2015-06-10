@@ -38,7 +38,7 @@ appList = (apps) ->
 deployStatusForApp = (name, config, activeEnvs = {}) ->
   (["#{env}:"].concat(if activeEnvs[env] then ['enabled', "(#{cron})"] else ['disabled']).join(' ') for env, cron of config.environments)
 
-deploymentStatuList = (activeJobs, apps) ->
+deploymentStatusList = (activeJobs, apps) ->
   (["    #{name}:"].concat(deployStatusForApp(name, apps[name].check_deploy_status, jobs)).join('\n      ') for name, jobs of activeJobs).join('\n')
 
 module.exports =
@@ -57,6 +57,7 @@ module.exports =
       The deployed ref is #{response.deployedRef()} (#{response.deployedSha()}).
 
       Commits that have not been deployed yet:
+
       #{commitList(response.commits())}
 
       Full diff at #{response.compareUrl()}
@@ -68,6 +69,7 @@ module.exports =
       The deployed ref is #{response.deployedRef()} (#{response.deployedSha()}).
 
       Commits deployed but not in #{response.head()}:
+
       #{commitList(response.reverseCommits())}
 
       Full diff at #{response.compareUrl()}
@@ -79,11 +81,13 @@ module.exports =
       The deployed ref is #{response.deployedRef()} (#{response.deployedSha()}).
 
       Commits that have not been deployed yet:
+
       #{commitList(response.commits())}
 
       Full diff at #{response.compareUrl()}
 
       Commits that have been deployed but are not in #{response.head()}:
+
       #{commitList(response.reverseCommits())}
       """
     else
@@ -95,6 +99,7 @@ module.exports =
     else
       """
       Here are the apps I know about:
+
       #{appList(apps)}
       """
 
@@ -104,7 +109,8 @@ module.exports =
     else
       """
       Deployment status auto checks:
-      #{deploymentStatuList(activeJobs, apps)}
+
+      #{deploymentStatusList(activeJobs, apps)}
       """
 
   mentionCommitters: (robot, response) ->

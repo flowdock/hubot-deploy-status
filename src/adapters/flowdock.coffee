@@ -128,6 +128,6 @@ module.exports =
     environments = {}
     for [response, thread] in pending
       environments[response.environment] = true
-      message.push "- #{response.name} - #{flowUrl}/threads/#{thread.thread_id}"
-    message.unshift "The following repositories have commits that have not been deployed to #{Object.keys(environments).join(', ')}:"
+      message.push "- [#{response.name}](#{flowUrl}/threads/#{thread.thread_id})"
+    message.unshift "The following repositories have commits that have not been deployed to #{Object.keys(environments).join(', ')}:\n"
     robot.messageRoom room, message.join('\n')
